@@ -1,7 +1,6 @@
-const express = require('express');
+
 const Ticket = require('../models/Ticket');
-const { authMiddleware } = require('../middleware/authMiddleware');
-const { adminMiddleware } = require('../middleware/roleMiddleware');
+
 
 // Ticket Controller (controllers/ticketController.js)
 exports.createTicket = async (req, res) => {
@@ -10,6 +9,7 @@ exports.createTicket = async (req, res) => {
         const newTicket = await Ticket.create({
             title,
             description,
+            status: 'Open',
             user: req.user.id
         });
         res.status(201).json(newTicket);
@@ -32,11 +32,21 @@ exports.getTickets = async (req, res) => {
 exports.updateTicketStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
+
     try {
-        const updatedTicket = await Ticket.findByIdAndUpdate(id, { status }, { new: true });
-        if (!updatedTicket) return res.status(404).json({ error: 'Ticket not found' });
-        res.json(updatedTicket);
+        const ticket = await Ticket.findById(id);
+        if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+        // Check if user is authorized to update the ticket
+        if (ticket.user.toString() !== req.user.id && req.user.role !== 'Admin') {
+            return res.status(403).json({ error: 'Not authorized to update this ticket' });
+        }
+
+        ticket.status = status;
+        await ticket.save();
+
+        res.json(ticket);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: 'Server error while updating ticket' });
     }
 };
