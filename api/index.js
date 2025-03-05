@@ -11,7 +11,7 @@ dotenv.config();
 
 app.use(express.json());
 app.use(cors({
-    origin: 'https://ticketing-backend-p827g1p7m-beamlakefelekes-projects.vercel.app', // Allow only your frontend
+    origin: 'https://ticketing-frontend-git-main-beamlakefelekes-projects.vercel.app', // Allow only your frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
 }));
